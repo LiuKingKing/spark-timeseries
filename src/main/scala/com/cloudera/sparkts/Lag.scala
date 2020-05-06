@@ -17,6 +17,9 @@ package com.cloudera.sparkts
 
 import org.apache.spark.mllib.linalg._
 
+/**
+  * 偏移矩阵相关
+  */
 private[sparkts] object Lag {
   /**
    * Makes a lag matrix from the given time series with the given lag, trimming both rows and
@@ -35,6 +38,8 @@ private[sparkts] object Lag {
     val numObservations = x.length
     val numRows = numObservations - maxLag
     val numCols = maxLag + (if (includeOriginal) 1 else 0)
+
+    //二维数组
     val lagMat = Array.ofDim[Double](numRows, numCols)
 
     val initialLag = if (includeOriginal) 0 else 1

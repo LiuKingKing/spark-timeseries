@@ -33,7 +33,16 @@ class UnivariateTimeSeriesSuite extends FunSuite with ShouldMatchers {
     lagMatrix should be (Matrices.dense(3, 3, Array(3.0, 4.0, 5.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0)))
   }
 
+  test("lagIncludeOriginalsTrue2") {
+    val lagMatrix = UnivariateTimeSeries.lag(Vectors.dense(1.0, 3.0, 4.0, 2.0, 7.0), 2, true)
+    lagMatrix should be (Matrices.dense(3, 3, Array(4.0, 2.0, 7.0, 3.0, 4.0, 2.0, 1.0, 3.0, 4.0)))
+  }
+
   test("lagIncludeOriginalsFalse") {
+    val lagMatrix = UnivariateTimeSeries.lag(Vectors.dense(1.0, 2.0, 3.0, 4.0, 5.0), 2, false)
+    lagMatrix should be (Matrices.dense(3, 2, Array(3.0, 4.0, 2.0, 1.0, 3.0, 4.0)))
+  }
+  test("lagIncludeOriginalsFalse2") {
     val lagMatrix = UnivariateTimeSeries.lag(Vectors.dense(1.0, 2.0, 3.0, 4.0, 5.0), 2, false)
     lagMatrix should be (Matrices.dense(3, 2, Array(2.0, 3.0, 4.0, 1.0, 2.0, 3.0)))
   }
@@ -155,6 +164,11 @@ class UnivariateTimeSeriesSuite extends FunSuite with ShouldMatchers {
     for (i <- 6 until n) {
       diffedOfOrder6(i) should be (diffedOneMore(i) +- 1e-6)
     }
+  }
+
+  test("rollSum"){
+    val rolls = rollSum(new DenseVector(Array(1.0, 2.0, 3.0, 4.0)),2)
+    rolls should be (new DenseVector(Array(3.0,5.0,7.0)))
   }
 }
 

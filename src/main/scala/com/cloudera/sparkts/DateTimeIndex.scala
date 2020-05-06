@@ -26,6 +26,8 @@ import com.cloudera.sparkts.DateTimeIndex._
 import com.cloudera.sparkts.TimeSeriesUtils._
 
 /**
+  * 时间和整数的对应关系
+  *
  * A DateTimeIndex maintains a bi-directional mapping between integers and an ordered collection of
  * date-times. Multiple date-times may correspond to the same integer, implying multiple samples
  * at the same date-time.
@@ -40,6 +42,7 @@ import com.cloudera.sparkts.TimeSeriesUtils._
 trait DateTimeIndex extends Serializable {
   /**
    * Returns a sub-slice of the index, confined to the given interval (inclusive).
+    * 按指定间隔获取子序例
    */
   def slice(interval: Interval): DateTimeIndex
 
@@ -90,12 +93,14 @@ trait DateTimeIndex extends Serializable {
 
   /**
    * The i-th date-time in the index.
+    * 第i个date-time
    */
   def dateTimeAtLoc(i: Int): ZonedDateTime
 
   /**
    * The location of the given date-time. If the index contains the date-time more than once,
    * returns its first appearance. If the given date-time does not appear in the index, returns -1.
+    * date-time的位置
    */
   def locAtDateTime(dt: ZonedDateTime): Int
 
@@ -118,6 +123,7 @@ trait DateTimeIndex extends Serializable {
    * The location at which the given date-time could be inserted. It is the location of the first
    * date-time that is greater than the given date-time. If the given date-time is greater than
    * or equal to the last date-time in the index, the index size is returned.
+    * 插入ZonedDateTime
    */
   def insertionLoc(dt: ZonedDateTime): Int
 
@@ -131,6 +137,7 @@ trait DateTimeIndex extends Serializable {
 
   /**
    * Returns the contents of the DateTimeIndex as an array of nanosecond values from the epoch.
+    * 以纳秒数组形式返回时间
    */
   def toNanosArray(): Array[Long]
 
@@ -151,11 +158,13 @@ trait DateTimeIndex extends Serializable {
 
   /**
    * Returns a new DateTimeIndex with instants at the specified zone
+    * 转换时区
    */
   def atZone(zone: ZoneId): DateTimeIndex
 }
 
 /**
+  * 统一
  * An implementation of DateTimeIndex that contains date-times spaced at regular intervals. Allows
  * for constant space storage and constant time operations.
  */
@@ -306,6 +315,7 @@ class UniformDateTimeIndex(
 }
 
 /**
+  * 不规则的DateTimeIndex
  * An implementation of DateTimeIndex that allows date-times to be spaced at uneven intervals.
  * Lookups or slicing by date-time are O(log n) operations.
  */

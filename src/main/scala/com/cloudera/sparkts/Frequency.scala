@@ -29,6 +29,7 @@ class BusinessDayRichInt(n: Int, firstDayOfWeek: Int = DayOfWeek.MONDAY.getValue
 trait Frequency extends Serializable {
   /**
    * Advances the given DateTime by this frequency n times.
+    * 将指定的DateTime扩大n倍
    */
   def advance(dt: ZonedDateTime, n: Int): ZonedDateTime
 
@@ -43,6 +44,9 @@ class DurationFrequency(val duration: Duration) extends Frequency {
 
   def advance(dt: ZonedDateTime, n: Int): ZonedDateTime = dt.plus(duration.multipliedBy(n))
 
+  /**
+    * 计算两个时间段之间包含多少个duration段，向下取整
+    */
   override def difference(dt1: ZonedDateTime, dt2: ZonedDateTime): Int = {
     val between = Duration.between(dt1, dt2)
     val betweenNanos = between.getSeconds * 1000000000L + between.getNano

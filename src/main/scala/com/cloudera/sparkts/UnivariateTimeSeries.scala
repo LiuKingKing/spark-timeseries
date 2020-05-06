@@ -26,7 +26,8 @@ import org.apache.spark.mllib.linalg._
 object UnivariateTimeSeries {
 
   /**
-   * Lags the univariate time series
+    * 向量的偏移矩阵
+   * Lags the univariate（单变量） time series
    *
    * Example input vector: (1.0, 2.0, 3.0, 4.0, 5.0)
    *
@@ -40,10 +41,22 @@ object UnivariateTimeSeries {
     Lag.lagMatTrimBoth(ts, maxLag, includeOriginal)
   }
 
+  /**
+    * 自相关性
+    * @param ts
+    * @param numLags
+    * @return
+    */
   def autocorr(ts: Array[Double], numLags: Int): Array[Double] = {
     autocorr(new DenseVector(ts), numLags).toArray
   }
 
+  /**
+    * 按偏移量计算商，临时称为向量的商
+    * @param ts
+    * @param lag
+    * @return
+    */
   def quotients(ts: Vector, lag: Int): Vector = {
     val ret = new Array[Double](ts.size - lag)
     var i = 0
@@ -54,6 +67,12 @@ object UnivariateTimeSeries {
     new DenseVector(ret)
   }
 
+  /**
+    * 按偏移量计算差商，记为向量的差商
+    * @param ts
+    * @param lag
+    * @return
+    */
   def price2ret(ts: Vector, lag: Int): Vector = {
     val ret = new Array[Double](ts.size - lag)
     var i = 0
@@ -66,6 +85,7 @@ object UnivariateTimeSeries {
 
   /**
    * Computes the sample autocorrelation of the given series.
+    * 计算自相关性
    */
   def autocorr(ts: Vector, numLags: Int): Vector = {
     val corrs = new Array[Double](numLags)
@@ -78,6 +98,7 @@ object UnivariateTimeSeries {
       val mean2 = mean(slice2)
       var variance1 = 0.0
       var variance2 = 0.0
+      //协方差
       var covariance = 0.0
       var j = 0
       while (j < ts.size - i) {
@@ -86,6 +107,8 @@ object UnivariateTimeSeries {
         variance1 += diff1 * diff1
         variance2 += diff2 * diff2
         covariance += diff1 * diff2
+
+
         j += 1
       }
 
@@ -97,6 +120,7 @@ object UnivariateTimeSeries {
 
   /**
    * Trim leading NaNs from a series.
+    * 去除序列中第一个NaN数据
    */
   def trimLeading(ts: Vector): Vector = {
     val start = firstNotNaN(ts)
@@ -109,6 +133,7 @@ object UnivariateTimeSeries {
 
   /**
    * Trim trailing NaNs from a series.
+    * 去掉序列中最后面的NaN数据
    */
   def trimTrailing(ts: Vector): Vector = {
     val end = lastNotNaN(ts)
@@ -141,6 +166,12 @@ object UnivariateTimeSeries {
     i
   }
 
+  /**
+    * 按指定的填充方法填充向量
+    * @param ts
+    * @param fillMethod
+    * @return
+    */
   def fillts(ts: Vector, fillMethod: String): Vector = {
     fillMethod match {
       case "linear" => fillLinear(ts)
@@ -177,6 +208,11 @@ object UnivariateTimeSeries {
     fillNearest(new DenseVector(values)).toArray
   }
 
+  /**
+    * 最近填充法：
+    * @param values
+    * @return
+    */
   def fillNearest(values: Vector): DenseVector = {
     val result = values.copy.toArray
     var lastExisting = -1
@@ -214,6 +250,7 @@ object UnivariateTimeSeries {
   /**
    * fills in NaN with the previously available not NaN, scanning from left to right.
    * 1 NaN NaN 2 Nan -> 1 1 1 2 2
+    * 前值填充
    */
   def fillPrevious(values: Vector): DenseVector = {
     val result = values.copy.toArray
@@ -234,6 +271,7 @@ object UnivariateTimeSeries {
   /**
    * fills in NaN with the next available not NaN, scanning from right to left.
    * 1 NaN NaN 2 Nan -> 1 2 2 2 NaN
+    * 后值填充
    */
   def fillNext(values: Vector): DenseVector = {
     val result = values.copy.toArray
@@ -253,6 +291,7 @@ object UnivariateTimeSeries {
 
   /**
    * fills in NaN with a default value
+    * 默认值填充
    */
   def fillWithDefault(values: Vector, filler: Double): DenseVector = {
     val result = values.copy.toArray
@@ -268,6 +307,11 @@ object UnivariateTimeSeries {
     fillLinear(new DenseVector(values)).toArray
   }
 
+  /**
+    * 线性填充：填充后呈线性
+    * @param values
+    * @return
+    */
   def fillLinear(values: Vector): DenseVector = {
     val result = values.copy.toArray
     var i = 1
@@ -295,6 +339,8 @@ object UnivariateTimeSeries {
 
   /**
    * Fill in NaN values using a natural cubic spline.
+    * 自然三次样条插值
+    * （平滑）
    * @param values Vector to interpolate
    * @return Interpolated vector
    */
@@ -320,10 +366,18 @@ object UnivariateTimeSeries {
     new DenseVector(result)
   }
 
+  /**
+    * 自回归模型
+    * TODO:1、模型，2、自相关系数
+    * @param values
+    * @param maxLag
+    * @return
+    */
   def ar(values: Vector, maxLag: Int): ARModel = Autoregression.fitModel(values, maxLag)
 
   /**
    * Down sample by taking every nth element starting from offset phase
+    * 从指定位置开始按步长n向下取样
    * @param values Vector to down sample
    * @param n take every nth element
    * @param phase offset from starting index
@@ -345,6 +399,11 @@ object UnivariateTimeSeries {
   }
 
   /**
+    * 向上采样
+    * 从指定位置开始，将n-1个zeros or NaN元素插入到原有向量的每个间隔中。
+    * 例如：n为3的情况
+    * 1 1 1 1 1 1  --> 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1
+    *
    * Up sample by inserting n - 1 elements into the original values vector, starting at index phase
    * @param values the original data vector
    * @param n the number of insertions between elements
@@ -373,6 +432,8 @@ object UnivariateTimeSeries {
   }
 
   /**
+    * 按指定步长进行差分，暂称为差分
+    *
    * Difference a vector with respect to the m-th prior element. Size-preserving by leaving first
    * `m` elements intact. This is the inverse of the `inverseDifferences` function.
    * @param ts Series to difference
@@ -415,6 +476,8 @@ object UnivariateTimeSeries {
   }
 
   /**
+    * 对差分向量按偏移量做加法，暂记为逆差
+    *
    * Calculate an "inverse-differenced" vector of a given lag. Size-preserving by leaving first
    * `startIndex` elements intact. This is the inverse of the `differences` function.
    * @param diffedTs differenced vector that we want to inverse
@@ -457,6 +520,7 @@ object UnivariateTimeSeries {
   }
 
   /**
+    * 差分的差分，记 d 阶差分
    * Performs differencing of order `d`. This means we recursively difference a vector a total of
    * d-times. So that d = 2 is a vector of the differences of differences. Note that for each
    * difference level, d_i, the element at ts(d_i - 1) corresponds to the value in the prior
@@ -480,6 +544,7 @@ object UnivariateTimeSeries {
   }
 
   /**
+    * d 阶逆差
    * Inverses differencing of order `d`.
    * @param diffedTs time series to reverse differencing process
    * @param d order of differencing
@@ -494,6 +559,12 @@ object UnivariateTimeSeries {
     addedTs
   }
 
+  /**
+    * 移动求和：按指定窗口大小移动求和
+    * @param ts
+    * @param n
+    * @return
+    */
   def rollSum(ts: Vector, n: Int): Vector = {
     new DenseVector(ts.toArray.sliding(n).toList.map(_.sum).toIndexedSeq.toArray[Double])
   }
