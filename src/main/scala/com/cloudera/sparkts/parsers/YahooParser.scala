@@ -37,6 +37,14 @@ object YahooParser {
     timeSeriesFromIrregularSamples(samples, labels, zone)
   }
 
+  /**
+    * 按解析规则解析数据并转换成RDD
+    *
+    * @param dir
+    * @param sc
+    * @param zone
+    * @return
+    */
   def yahooFiles(
     dir: String,
     sc: SparkContext,

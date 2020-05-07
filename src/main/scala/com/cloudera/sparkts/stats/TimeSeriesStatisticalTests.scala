@@ -127,6 +127,8 @@ object TimeSeriesStatisticalTests {
   }
 
   /**
+    * 麦克农近似估计
+    *
    * Returns MacKinnon's approximate p-value for the given test statistic.
    *
    * MacKinnon, J.G. 1994  "Approximate Asymptotic Distribution Functions for

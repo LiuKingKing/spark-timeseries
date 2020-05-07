@@ -18,10 +18,16 @@ package com.cloudera.sparkts.models
 import org.apache.spark.mllib.linalg.Vector
 
 /**
+  * 在时间序列中模拟时间依赖效应。
+  *
  * Models time dependent effects in a time series.
  */
 trait TimeSeriesModel extends Serializable {
   /**
+    *
+    * 取一个时间序列，假设该时间序列具有该模型的特征，并返回一个时间序列，去掉该模型的时间依赖效应。
+    *
+    *
    * Takes a time series that is assumed to have this model's characteristics and returns a time
    * series with time-dependent effects of this model removed.
    *
@@ -34,6 +40,8 @@ trait TimeSeriesModel extends Serializable {
   def removeTimeDependentEffects(ts: Vector, dest: Vector = null): Vector
 
   /**
+    * 增加时间依赖效应
+    *
    * Takes a series of i.i.d. observations and returns a time series based on it with the
    * time-dependent effects of this model added.
    *

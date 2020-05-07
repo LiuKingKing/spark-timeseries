@@ -442,6 +442,7 @@ class IrregularDateTimeIndex(
 }
 
 /**
+  * 混合类型
  * An implementation of DateTimeIndex that holds a hybrid collection of DateTimeIndex
  * implementations.
  *

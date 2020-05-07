@@ -53,6 +53,10 @@ class TimeSeries[K](val index: DateTimeIndex, val data: DenseMatrix,
    *   6 pm   3   2         1         8   7         6
    *   7 pm   4   3         2         9   8         7
    *   8 pm   5   4         3         10  9         8
+    *
+    *
+    *
+    *   TimeSeries的偏移处理
    *
    */
   def lags[U: ClassTag](maxLag: Int, includeOriginals: Boolean, laggedKey: (K, Int) => U)
@@ -169,6 +173,8 @@ class TimeSeries[K](val index: DateTimeIndex, val data: DenseMatrix,
   }
 
   /**
+    * 按time frequency进行差分处理
+    *
     * Returns a TimeSeries where each individual time series is differenced with the given time
     * frequency.
     *
@@ -196,6 +202,8 @@ class TimeSeries[K](val index: DateTimeIndex, val data: DenseMatrix,
     * If we are differencing [x(t) - x(t-k)], for example, where k is the lag period, then
     * if x(t) is NaN, the result is NaN. If x(t-k) is NaN but x(t) is not, however, it looks for
     * the most recent non-NaN value before t-k and uses that to calculate the difference.
+    *
+    *  按time frequency进行差分处理
     */
   def differencesByFrequency(baseFrequency: Frequency): TimeSeries[K] = {
     // first calculate the new index
@@ -235,6 +243,7 @@ class TimeSeries[K](val index: DateTimeIndex, val data: DenseMatrix,
   }
 
   /**
+    * 差分
    * Returns a TimeSeries where each time series is differenced with the given order. The new
    * TimeSeries will be missing the first n date-times.
    */
@@ -249,6 +258,7 @@ class TimeSeries[K](val index: DateTimeIndex, val data: DenseMatrix,
   def differences(): TimeSeries[K] = differences(1)
 
   /**
+    * 商
    * Returns a TimeSeries where each time series is quotiented with the given order. The new
    * TimeSeries will be missing the first n date-times.
    */
@@ -263,6 +273,7 @@ class TimeSeries[K](val index: DateTimeIndex, val data: DenseMatrix,
   def quotients(): TimeSeries[K] = quotients(1)
 
   /**
+    * 差商
    * Returns a return series for each time series. Assumes periodic (as opposed to continuously
    * compounded) returns.
    */

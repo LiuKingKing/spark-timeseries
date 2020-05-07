@@ -26,6 +26,7 @@ import org.apache.spark.mllib.linalg._
 object UnivariateTimeSeries {
 
   /**
+    *
     * 向量的偏移矩阵
    * Lags the univariate（单变量） time series
    *

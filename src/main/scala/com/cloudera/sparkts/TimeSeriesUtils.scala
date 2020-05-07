@@ -54,6 +54,8 @@ private[sparkts] object TimeSeriesUtils {
   }
 
   /**
+    * 按指定索引重建
+    *
    * Accepts a series of values indexed by the given source index and moves it to conform to a
    * target index. The target index need not fit inside the source index - non-overlapping regions
    * will be filled with NaNs or the given default value.

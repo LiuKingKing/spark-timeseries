@@ -24,6 +24,9 @@ import com.cloudera.sparkts.TimeSeriesUtils._
 
 import java.time._
 
+/**
+  * Kryo序列化处理
+  */
 class TimeSeriesKryoRegistrator extends KryoRegistrator {
   def registerClasses(kryo: Kryo): Unit = {
     kryo.register(classOf[TimeSeries[_]])

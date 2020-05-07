@@ -21,14 +21,28 @@ import org.apache.commons.math3.random.RandomGenerator
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression
 import org.apache.spark.mllib.linalg.{DenseVector, Vector}
 
+/**
+  * 自回归 AR
+  */
 object Autoregression {
   /**
+    * 一阶自回归模型
+    *
+    * 描述当前值与历史值之间的关系
+    *
    * Fits an AR(1) model to the given time series
    */
   def fitModel(ts: Vector): ARModel = fitModel(ts, 1)
 
   /**
+    * n阶自回归模型
+    *
    * Fits an AR(n) model to a given time series
+    *
+    * OLS-最小二乘法,
+    *
+    * 这里的intercept标示截距
+    *
    * @param ts Data to fit
    * @param maxLag The autoregressive factor, terms t - 1 through t - maxLag are included
    * @param noIntercept A boolean to indicate if the regression should be run without an intercept,
@@ -40,19 +54,28 @@ object Autoregression {
     // https://github.com/statsmodels/statsmodels/blob/master/statsmodels/tsa/ar_model.py
 
     // Make left hand side
+    // 5000个元素的Vector
     val Y = toBreeze(ts)(maxLag until ts.size)
+
     // Make lagged right hand side
+    // 4999行，1列的matrix
     val X = Lag.lagMatTrimBoth(ts, maxLag)
 
     val regression = new OLSMultipleLinearRegression()
     regression.setNoIntercept(noIntercept) // drop intercept in regression
     regression.newSampleData(Y.toArray, matToRowArrs(X))
+    //最小二乘的参数估计
     val params = regression.estimateRegressionParameters()
     val (c, coeffs) = if (noIntercept) (0.0, params) else (params.head, params.tail)
     new ARModel(c, coeffs)
   }
 }
 
+/**
+  * 自回归模型
+  * @param c
+  * @param coefficients 系数
+  */
 class ARModel(val c: Double, val coefficients: Array[Double]) extends TimeSeriesModel {
 
   def this(c: Double, coef: Double) = this(c, Array(coef))
@@ -63,6 +86,7 @@ class ARModel(val c: Double, val coefficients: Array[Double]) extends TimeSeries
     val dest = if (destTs == null) new Array[Double](ts.size) else destTs.toArray
     var i = 0
     while (i < ts.size) {
+      //减去c
       dest(i) = ts(i) - c
       var j = 0
       while (j < coefficients.length && i - j - 1 >= 0) {
@@ -89,6 +113,12 @@ class ARModel(val c: Double, val coefficients: Array[Double]) extends TimeSeries
     new DenseVector(dest)
   }
 
+  /**
+    * 采样
+    * @param n
+    * @param rand
+    * @return
+    */
   def sample(n: Int, rand: RandomGenerator): Vector = {
     val vec = new DenseVector(Array.fill[Double](n)(rand.nextGaussian()))
     addTimeDependentEffects(vec, vec)

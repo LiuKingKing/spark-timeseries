@@ -20,14 +20,27 @@ import org.apache.spark.mllib.linalg.{DenseVector => SDV, SparseVector => SSV, V
 import org.apache.spark.mllib.linalg.{DenseMatrix => SDM, SparseMatrix => SSM, Matrix => SM}
 
 private[sparkts] object MatrixUtil {
+
+  /**
+    * 转置
+    * @param arr
+    * @return
+    */
   def transpose(arr: Array[Array[Double]]): Array[Array[Double]] = {
     val mat = new Array[Array[Double]](arr.head.length)
     for (i <- arr.head.indices) {
+      //这里的 _ 代表每一行；
+      //也就算将每一行的第i个元素都取出来给到mat的第i行，从而实现转置
       mat(i) = arr.map(_(i))
     }
     mat
   }
 
+  /**
+    * Matrixs-->二维数组
+    * @param mat
+    * @return
+    */
   def matToRowArrs(mat: SM): Array[Array[Double]] = {
     val arrs = new Array[Array[Double]](mat.rows)
     for (r <- 0 until mat.rows) {
@@ -44,6 +57,11 @@ private[sparkts] object MatrixUtil {
     arrs
   }
 
+  /**
+    * 二维数组-->Matrixs
+    * @param arrs
+    * @return
+    */
   def arrsToMat(arrs: Iterator[Array[Double]]): DenseMatrix[Double] = {
     vecArrsToMats(arrs, arrs.length).next()
   }
@@ -74,6 +92,8 @@ private[sparkts] object MatrixUtil {
   }
 
   /**
+    * 从breeze matrix 创建Spark-Mllib包中的Matrix实例
+    *
    * Creates a spark-mllib matrix instance from a breeze matrix.
    *
    * @param breeze a breeze matrix
@@ -93,6 +113,8 @@ private[sparkts] object MatrixUtil {
   }
 
   /**
+    * 从Spark-Mllib包中的Matrix 创建breeze matrix 实例
+    *
    * Creates a breeze matrix instance from a spark-mllib matrix.
    *
    * @param sparkMatrix a breeze matrix
