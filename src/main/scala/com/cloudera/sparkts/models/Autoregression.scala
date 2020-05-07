@@ -54,11 +54,9 @@ object Autoregression {
     // https://github.com/statsmodels/statsmodels/blob/master/statsmodels/tsa/ar_model.py
 
     // Make left hand side
-    // 5000个元素的Vector
     val Y = toBreeze(ts)(maxLag until ts.size)
 
     // Make lagged right hand side
-    // 4999行，1列的matrix
     val X = Lag.lagMatTrimBoth(ts, maxLag)
 
     val regression = new OLSMultipleLinearRegression()
