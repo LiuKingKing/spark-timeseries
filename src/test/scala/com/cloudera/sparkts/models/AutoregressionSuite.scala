@@ -26,7 +26,7 @@ import org.scalatest.FunSuite
 class AutoregressionSuite extends FunSuite {
 
   /**
-    * 一阶自回归模型结果近似线性拟合
+    * 一阶自回归模型
     */
   test("fit AR(1) model") {
     val model = new ARModel(1.5, Array(.2))
@@ -38,7 +38,7 @@ class AutoregressionSuite extends FunSuite {
   }
 
   /**
-    * 一阶自回归模型结果近似二次拟合
+    * 二阶自回归模型
     */
   test("fit AR(2) model") {
     val model = new ARModel(1.5, Array(.2, .3))

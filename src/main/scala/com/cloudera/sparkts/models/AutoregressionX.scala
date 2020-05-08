@@ -26,6 +26,10 @@ import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression
  */
 object AutoregressionX {
   /**
+    *
+    * 引入额外变量来做自回归。该模型预测了一个因变量Y在t时刻的值
+    * 插值处理，同样使用最小二乘
+    *
    * Fit an autoregressive model with additional exogenous variables. The model predicts a value
    * at time t of a dependent variable, Y, as a function of previous values of Y, and a combination
    * of previous values of exogenous regressors X_i, and current values of exogenous regressors X_i.
@@ -64,6 +68,7 @@ object AutoregressionX {
     val params = regression.estimateRegressionParameters()
     val (c, coeffs) = if (noIntercept) (0.0, params) else (params.head, params.tail)
 
+    //ARX
     new ARXModel(c, coeffs, yMaxLag, xMaxLag, includeOriginalX)
   }
 
@@ -76,11 +81,14 @@ object AutoregressionX {
       includeOriginalX: Boolean = true): Array[Array[Double]] = {
     val maxLag = max(yMaxLag, xMaxLag)
     // AR terms from dependent variable (autoregressive portion)
+    //按yMaxLag偏移处理后做为自回归部分，二维数组
     val arY = Lag.lagMatTrimBoth(y, yMaxLag)
     // exogenous variables lagged as appropriate
+    //按xMaxLag偏移处理后做为外部变量，二维数组
     val laggedX = Lag.lagMatTrimBoth(x, xMaxLag)
 
     // adjust difference in size for arY and laggedX so that they match up
+    //调整自回归部分的长度：长对适配
     val arYAdj = arY.drop(maxLag - yMaxLag)
 
     val laggedXAdj = laggedX.drop(maxLag - xMaxLag)
@@ -88,6 +96,7 @@ object AutoregressionX {
     val trimmedX = if (includeOriginalX) x.drop(maxLag) else Array[Array[Double]]()
 
     // combine matrices by concatenating column-wise
+    //按列连接
     Array(arYAdj, laggedXAdj, trimmedX).transpose.map(_.reduceLeft(_ ++_))
   }
 }

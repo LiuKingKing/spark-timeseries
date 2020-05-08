@@ -16,9 +16,10 @@
 package com.cloudera.sparkts.models
 
 import breeze.linalg._
-
+import breeze.plot._
+import breeze.plot.Figure
 import org.apache.commons.math3.random.MersenneTwister
-import com.cloudera.sparkts.Lag
+import com.cloudera.sparkts.{EasyPlot, Lag, MatrixUtil}
 import org.scalatest.FunSuite
 import org.scalatest.Matchers._
 
@@ -28,8 +29,33 @@ class AutoregressionXSuite extends FunSuite {
   val nCols = 2
   val X = Array.fill(nRows, nCols)(rand.nextGaussian())
   val intercept = rand.nextGaussian * 10
+  val picPath = "/home/liuking/idea/workspace/spark-timeseries/pics/"
+
+
+  test("plot X"){
+    val f = Figure()
+    val p = f.subplot(0)
+//    val matX = MatrixUtil.arrsToMat(X.iterator)
+    val line = linspace(1,1000,1000)
+    val xCoeffs = Array(0.8, 0.2)
+    val rawY = X.map(_.zip(xCoeffs).map { case (b, v) => b * v }.sum + intercept)
+    val arCoeff = 0.4
+    val y = rawY.scanLeft(0.0) { case (priorY, currY) => currY + priorY * arCoeff }.tail
+    val dy = new DenseVector(y)
+    val dx = new DenseMatrix(rows = X.length, cols = X.head.length, data = X.transpose.flatten)
+
+    p += plot(dx(::,0).toDenseVector,dy,'.')
+    p += plot(dx(::,1).toDenseVector,dy,'+')
+    p.xlabel_=("dx")
+    p.xlabel_=("dy")
+    p.title_=("Data Show")
+    f.saveas(picPath+"arx1.png")
+  }
 
   // tests an autoregressive model where the exogenous variables are not lagged
+  /**
+    * 模拟ARX模型
+    */
   test("fit ARX(1, 0, true)") {
     val xCoeffs = Array(0.8, 0.2)
     val rawY = X.map(_.zip(xCoeffs).map { case (b, v) => b * v }.sum + intercept)

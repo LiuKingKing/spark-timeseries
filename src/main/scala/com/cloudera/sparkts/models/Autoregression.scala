@@ -23,6 +23,7 @@ import org.apache.spark.mllib.linalg.{DenseVector, Vector}
 
 /**
   * 自回归 AR
+  *
   */
 object Autoregression {
   /**
