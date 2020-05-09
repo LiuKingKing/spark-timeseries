@@ -44,12 +44,19 @@ class AutoregressionXSuite extends FunSuite {
     val dy = new DenseVector(y)
     val dx = new DenseMatrix(rows = X.length, cols = X.head.length, data = X.transpose.flatten)
 
-    p += plot(dx(::,0).toDenseVector,dy,'.')
-    p += plot(dx(::,1).toDenseVector,dy,'+')
-    p.xlabel_=("dx")
-    p.xlabel_=("dy")
+//    p += plot(dx(::,0).toDenseVector,dy,'.')
+//    p += plot(dx(::,1).toDenseVector,dy,'+')
+
+//    EasyPlot.ezplot(dx(::,0).toArray,'.').saveas(picPath+"xCol0.png")
+    val arr0 = dx(::,0).toArray
+    val arr1 = dx(::,1).toArray
+    p += plot(arr0.indices.map(_.toDouble).toArray, arr0, style = '.')
+    p += plot(arr1.indices.map(_.toDouble).toArray, arr1, style = '+')
+
+    p.xlabel_=("x")
+    p.ylabel_=("y")
     p.title_=("Data Show")
-    f.saveas(picPath+"arx1.png")
+    f.saveas(picPath+"series.png")
   }
 
   // tests an autoregressive model where the exogenous variables are not lagged
@@ -58,11 +65,17 @@ class AutoregressionXSuite extends FunSuite {
     */
   test("fit ARX(1, 0, true)") {
     val xCoeffs = Array(0.8, 0.2)
+    //zip:拉链处理  (a,b) zip (c,d) ---> (tuple2(a,c),tuple2(b,d))
+    //(tuple2(a,c),tuple2(b,d)) ---> (a*c,b*d) ---> a*c+b*d ---> a*c+b*d + intercept
     val rawY = X.map(_.zip(xCoeffs).map { case (b, v) => b * v }.sum + intercept)
     val arCoeff = 0.4
+    //scanLeft:从初始值开始应用op进行累计操作。
+    // eg:Array(1, 2, 3, 4).scanLeft(0)(_ + _) == Array(0, 0+1, 0+1+2, 0+1+2+3, 0+1+2+3+4) == Array(0, 1, 3, 6, 10)
     val y = rawY.scanLeft(0.0) { case (priorY, currY) => currY + priorY * arCoeff }.tail
     val dy = new DenseVector(y)
+    //X转置并进行flatten。 将X转换成Matrix，方便操作
     val dx = new DenseMatrix(rows = X.length, cols = X.head.length, data = X.transpose.flatten)
+    //ARX模型
     val model = AutoregressionX.fitModel(dy, dx, 1, 0, includeOriginalX = true)
     val combinedCoeffs = Array(arCoeff) ++ xCoeffs
 
@@ -141,6 +154,9 @@ class AutoregressionXSuite extends FunSuite {
     }
   }
 
+  /**
+    * 使用ARX预测
+    */
   test("predict using ARX model") {
     val c = 0
     val xCoeffs = Array(-1.136026484226831e-08, 8.637677568908233e-07,

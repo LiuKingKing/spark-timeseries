@@ -81,7 +81,7 @@ object AutoregressionX {
       includeOriginalX: Boolean = true): Array[Array[Double]] = {
     val maxLag = max(yMaxLag, xMaxLag)
     // AR terms from dependent variable (autoregressive portion)
-    //按yMaxLag偏移处理后做为自回归部分，二维数组
+    //按yMaxLag偏移处理后做为自回归部分
     val arY = Lag.lagMatTrimBoth(y, yMaxLag)
     // exogenous variables lagged as appropriate
     //按xMaxLag偏移处理后做为外部变量，二维数组

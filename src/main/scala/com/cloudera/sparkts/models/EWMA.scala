@@ -24,6 +24,7 @@ import org.apache.commons.math3.optim.{InitialGuess, MaxEval, MaxIter, SimpleVal
 import org.apache.spark.mllib.linalg.{DenseVector, Vector}
 
 /**
+  * 指数加权移动平均模型  EWMA ， 也称作 简单指数平滑过程
  * Fits an Exponentially Weight Moving Average model (EWMA) (aka. Simple Exponential Smoothing) to
  * a time series. The model is defined as S_t = (1 - a) * X_t + a * S_{t - 1}, where a is the
  * smoothing parameter, X is the original series, and S is the smoothed series. For more
@@ -31,6 +32,12 @@ import org.apache.spark.mllib.linalg.{DenseVector, Vector}
  */
 object EWMA {
   /**
+    * 使用时序值中的第一个作为起始点。
+    * 以差方和作为目标优化函数，寻找平滑参数。
+    *
+    * 注意，优化是作为无界优化执行的，尽管在其正式定义中平滑参数是<= 1，这对应于一个不等式有界优化。
+    * 所以平滑参数需要经常进行检查
+    *
    * Fits an EWMA model to a time series. Uses the first point in the time series as a starting
    * value. Uses sum squared error as an objective function to optimize to find smoothing parameter
    * The model for EWMA is recursively defined as S_t = (1 - a) * X_t + a * S_{t-1}, where
