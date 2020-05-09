@@ -50,6 +50,8 @@ object EWMA {
    * @return EWMA model
    */
   def fitModel(ts: Vector): EWMAModel = {
+    //Conjugate共轭
+    //非线性共轭梯度优化
     val optimizer = new NonLinearConjugateGradientOptimizer(
       NonLinearConjugateGradientOptimizer.Formula.FLETCHER_REEVES,
       new SimpleValueChecker(1e-6, 1e-6))
@@ -79,6 +81,9 @@ object EWMA {
 class EWMAModel(val smoothing: Double) extends TimeSeriesModel {
 
   /**
+    * SSE : sum squared error 差方和
+    *
+    *
    * Calculates the SSE for a given timeseries ts given the smoothing parameter of the current model
    * The forecast for the observation at period t + 1 is the smoothed value at time t
    * Source: http://people.duke.edu/~rnau/411avg.htm
