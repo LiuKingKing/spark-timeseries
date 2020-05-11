@@ -81,7 +81,7 @@ object EWMA {
 class EWMAModel(val smoothing: Double) extends TimeSeriesModel {
 
   /**
-    * SSE : sum squared error 差方和
+    * SSE : sum squared error 差方和  残差和
     *
     *
    * Calculates the SSE for a given timeseries ts given the smoothing parameter of the current model

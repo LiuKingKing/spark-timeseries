@@ -521,7 +521,7 @@ object UnivariateTimeSeries {
   }
 
   /**
-    * 差分的差分，记 d 阶差分
+    * 差分的差分:d 阶差分
    * Performs differencing of order `d`. This means we recursively difference a vector a total of
    * d-times. So that d = 2 is a vector of the differences of differences. Note that for each
    * difference level, d_i, the element at ts(d_i - 1) corresponds to the value in the prior

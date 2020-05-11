@@ -38,6 +38,15 @@ import scala.util.{Failure, Try}
 import scala.collection.mutable.HashSet
 
 /**
+  * ARIMA 模型 先验值的AR自回归 + 先验误差的MA移动平均
+  *
+  * ARIMA（p,d,q）
+  * p:自回归项数
+  * d:使之成为平稳序列所做的差分次数（阶数）
+  * q:移动平均项数
+  *
+  * Y_t = c + \sum_{i=1}^p \phi_i*B^i*Y_t + \sum_{i=1}^q \theta_i*B^i*\epsilon_t + \epsilon_t
+  *
   * ARIMA models allow modeling timeseries as a function of prior values of the series
  * (i.e. autoregressive terms) and a moving average of prior error terms. ARIMA models
  * are traditionally specified as ARIMA(p, d, q), where p is the autoregressive order,
@@ -53,6 +62,9 @@ import scala.collection.mutable.HashSet
  */
 object ARIMA {
   /**
+    *
+    * 使用 ACF 和 PACF 或者比对观测函数的值得到最合适的参数组合。
+    *
    * Given a time series, fit a non-seasonal ARIMA model of order (p, d, q), where p represents
    * the autoregression terms, d represents the order of differencing, and q moving average error
    * terms. If includeIntercept is true, the model is fitted with an intercept. In order to select
@@ -200,6 +212,10 @@ object ARIMA {
   }
 
   /**
+    *
+    * Hannan-Rissanen算法
+    * AR(m) ：  m > max(p, q)
+    *
    * Initializes ARMA parameter estimates using the Hannan-Rissanen algorithm. The process is:
    * fit an AR(m) model of a higher order (i.e. m > max(p, q)), use this to estimate errors,
    * then fit an OLS model of AR(p) terms and MA(q) terms. The coefficients estimated by
