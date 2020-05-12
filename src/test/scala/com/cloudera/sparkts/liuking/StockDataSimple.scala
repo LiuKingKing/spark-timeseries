@@ -89,6 +89,12 @@ class StockDataSimple extends FunSuite with ShouldMatchers {
     * 时间序列分析第二章-第一题
     */
   test("TimeSeriesAnalysis-2-1"){
+    val data = Range(1,21).map(_*1.0).toArray
+    println(data.toList)
+    val meanAndVari = meanAndVariance(data)
+    println(meanAndVari)
+
+    //
 
   }
 
