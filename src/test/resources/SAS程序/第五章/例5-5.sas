@@ -1,0 +1,16 @@
+goptions vsize=6.8cm hsize=10cm;
+data a;
+x0=0;
+do t=-10 to 1000;
+rand=10*rannor(12345);
+x=x0+rand;
+x0=x;
+if t>0 then output;
+end;
+data a;
+set a;
+difx=dif(x);
+proc gplot data=a;
+plot x*t difx*t;
+symbol v=none c=black i=join;
+run;

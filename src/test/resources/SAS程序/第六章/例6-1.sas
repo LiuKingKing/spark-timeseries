@@ -1,0 +1,94 @@
+/*x1=m4,x2=m2*12 y=x-x2 i=y-s */
+goptions vsize=6.8cm hsize=10cm;
+data a;
+input gov_cons x1 x2 y I;
+time=intnx('quarter','1jan1981'd,_n_-1);
+S_I=gov_cons-x2;
+format time yyq4.;
+cards;
+8444	.	.	.	.
+9215	.	.	.	.
+8879	8882	8840.875	38.125	211.4409722
+8990	8799.75	8830	160	-46.61458333
+8115	8860.25	8824.125	-709.125	-170.6701389
+9457	8788	8826	631	125.84375
+8590	8864	8974.25	-384.25	-210.9340278
+9294	9084.5	9099.125	194.875	-11.73958333
+8997	9113.75	9171.375	-174.375	364.0798611
+9574	9229	9282.75	291.25	-213.90625
+9051	9336.5	9351.875	-300.875	-127.5590278
+9724	9367.25	9438.375	285.625	79.01041667
+9120	9509.5	9596.375	-476.375	62.07986111
+10143	9683.25	9727	416	-89.15625
+9746	9770.75	9828	-82	91.31597222
+10074	9885.25	9969.5	104.5	-102.1145833
+9578	10053.75	10100	-522	16.45486111
+10817	10146.25	10234.375	582.625	77.46875
+10116	10322.5	10362.875	-246.875	-73.55902778
+10779	10403.25	10459.375	319.625	113.0104167
+9901	10515.5	10586.75	-685.75	-147.2951389
+11266	10658	10680.75	585.25	80.09375
+10686	10703.5	10731	-45	128.3159722
+10961	10758.5	10766.875	194.125	-12.48958333
+10121	10775.25	10774.125	-653.125	-114.6701389
+11333	10773	10818.5	514.5	9.34375
+10677	10864	10936.125	-259.125	-85.80902778
+11325	11008.25	11044.625	280.375	73.76041667
+10698	11081	11127.875	-429.875	108.5798611
+11624	11174.75	11183.25	440.75	-64.40625
+11052	11191.75	11180.625	-128.625	44.69097222
+11393	11169.5	11226.125	166.875	-39.73958333
+10609	11282.75	11323.25	-714.25	-175.7951389
+12077	11363.75	11411.75	665.25	160.09375
+11376	11459.75	11536.75	-160.75	12.56597222
+11777	11613.75	11633	144	-62.61458333
+11225	11652.25	11715.75	-490.75	47.70486111
+12231	11779.25	11820.75	410.25	-94.90625
+11884	11862.25	.	.	.
+12109	.	.	.	.
+;
+proc gplot data=a;
+plot gov_cons*time=1;
+plot gov_cons*time=1 x2*time=2/overlay;
+plot S_I*time=2;
+plot I*time=2;
+symbol1 c=black i=join v=star;
+symbol2 c=red i=join v=none w=1;
+run;
+data b;
+input t$2. S;
+cards;
+Q1 -538.45 	
+Q2 505.16 	
+Q3 -173.32
+Q4 206.61 
+;
+proc gplot data=b;
+plot S*t=3;
+symbol3 i=join c=red v=star;
+run;
+data c;
+set a b;
+run;
+proc x11 data=a;
+quarterly date=time;
+var gov_cons;
+output  out=out  b1=x d10=season d11=adjusted d12=trend d13=irr;
+data out;
+set out;
+estimate=trend*season/100;
+proc gplot data=out;
+plot season*time=2 adjusted*time=2 trend*time=2 irr*time=2;
+plot x*time=1 estimate*time=2/overlay;
+run;
+
+proc forecast data=a interval=quarter lead=8 method=addwinters trend=2 seasons=4 out=out2 outfull outest=outest;
+id time;
+var gov_cons;
+proc gplot data=out2;
+plot gov_cons*time=_type_;
+symbol1 c=black v=star i=join;
+symbol2 i=spline v=none c=red;
+symbol3 i=spline v=none l=3 r=1 c=blue;
+symbol4 i=spline v=none l=3 r=1 c=blue;
+run;
