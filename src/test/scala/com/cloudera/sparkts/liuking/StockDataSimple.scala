@@ -13,11 +13,18 @@ import scala.util.parsing.json.{JSON, JSONObject}
   */
 class StockDataSimple extends FunSuite with ShouldMatchers {
 
-  val picPath = "/home/liuking/idea/workspace/spark-timeseries/pics/"
+//  val picPath = "/home/liuking/idea/workspace/spark-timeseries/pics/"
+    val picPath = getClass.getClassLoader.getResource("pics/").getFile
 
   test("简单时间序列数据绘制") {
     //data api : https://api.doctorxiong.club/v1/stock/detail?code=600237&year=2020
-    val origin = JSON.parseFull(Source.fromFile("/home/liuking/idea/workspace/spark-timeseries/data/600237.json").mkString)
+
+
+    val dataFile1 = getClass.getClassLoader.getResourceAsStream("data/600237.json")
+    val origin = JSON.parseFull(Source.fromInputStream(dataFile1).mkString)
+
+    //    val path = getClass.getClassLoader.getResource("data/600237.json").getPath
+//    val origin = JSON.parseFull(Source.fromFile("/home/liuking/idea/workspace/spark-timeseries/data/600237.json").mkString)
 
     def extrJson1(json : Option[Any])= json match {
       case Some(map: Map[String,Any]) => map
