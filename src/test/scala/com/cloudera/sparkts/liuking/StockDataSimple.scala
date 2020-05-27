@@ -92,7 +92,6 @@ class StockDataSimple extends FunSuite with ShouldMatchers {
     println("middle:"+middle)
 
 
-
   }
 
 
@@ -137,15 +136,20 @@ class StockDataSimple extends FunSuite with ShouldMatchers {
     var variancet = diffPower.scanLeft(0.0)(_+_).tail.zip(1 until(diffPower.length)).map{case (num,len)=>num/len}
     println("variance t:"+variancet.toList)
 
-    val mat = UnivariateTimeSeries.lag(Vectors.dense(data),1,true)
-    println(mat)
+//    val mat = UnivariateTimeSeries.lag(Vectors.dense(data),1,true)
+//    println(mat)
+//
+//    val diff = UnivariateTimeSeries.differencesAtLag(Vectors.dense(data),1)
+//    println(diff)
 
-    val diff = UnivariateTimeSeries.differencesAtLag(Vectors.dense(data),1)
-    println(diff)
+//    val corr = UnivariateTimeSeries.autocorr(data,1)
+//    println(corr.toList)
 
-    val corr = UnivariateTimeSeries.autocorr(data,1)
-    println(corr.toList)
+    //stderr t
+    val stdt = variancet.map(math.sqrt(_)).tail
+    println("std t:"+stdt.toList)
 
+    //gamma k
 
   }
 

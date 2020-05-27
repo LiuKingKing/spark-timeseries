@@ -30,6 +30,7 @@ private[sparkts] object Lag {
   }
 
   /**
+    * 利用给定的时滞，从给定的时间序列中得到一个滞后矩阵
    * Makes a lag matrix from the given time series with the given lag, trimming both rows and
    * columns so that every element in the matrix is full.
    */

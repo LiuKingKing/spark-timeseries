@@ -65,6 +65,11 @@ object ARIMA {
     *
     * 使用 ACF 和 PACF 或者比对观测函数的值得到最合适的参数组合。
     *
+    * 'css-bobyqa',and 'css-cgd'都对[条件平方和]进行对数似然估计。
+    * *                        css ： conditional sum of squares 条件平方和
+    * *                        BOBYQA : Bound Optimization BY Quadratic Approximation 用二次逼近法优化边界
+    * *                        CGD :
+    *
    * Given a time series, fit a non-seasonal ARIMA model of order (p, d, q), where p represents
    * the autoregression terms, d represents the order of differencing, and q moving average error
    * terms. If includeIntercept is true, the model is fitted with an intercept. In order to select
@@ -77,16 +82,21 @@ object ARIMA {
    * @param p autoregressive order
    * @param d differencing order
    * @param q moving average order
-   * @param ts time series to which to fit an ARIMA(p, d, q) model
+   * @param ts               time series to which to fit an ARIMA(p, d, q) model
    * @param includeIntercept if true the model is fit with an intercept term. Default is true
-   * @param method objective function and optimization method, current options are 'css-bobyqa',
-   *               and 'css-cgd'. Both optimize the log likelihood in terms of the
-   *               conditional sum of squares. The first uses BOBYQA for optimization, while
-   *               the second uses conjugate gradient descent. Default is 'css-cgd'
-   * @param userInitParams A set of user provided initial parameters for optimization. If null
-   *                       (default), initialized using Hannan-Rissanen algorithm. If provided,
-   *                       order of parameter should be: intercept term, AR parameters (in
-   *                       increasing order of lag), MA parameters (in increasing order of lag)
+   * @param method           objective function and optimization method, current options are 'css-bobyqa',
+   *                         and 'css-cgd'. Both optimize the log likelihood in terms of the
+   *                         conditional sum of squares. The first uses BOBYQA for optimization, while
+   *                         the second uses conjugate gradient descent. Default is 'css-cgd'
+    *
+    *                        'css-bobyqa',and 'css-cgd'都对[条件平方和]进行对数似然估计。
+    *                        css ： conditional sum of squares 条件平方和
+    *                        BOBYQA : Bound Optimization BY Quadratic Approximation 用二次逼近法优化边界
+    *                        CGD :
+    * @param userInitParams   A set of user provided initial parameters for optimization. If null
+   *                         (default), initialized using Hannan-Rissanen algorithm. If provided,
+   *                         order of parameter should be: intercept term, AR parameters (in
+   *                         increasing order of lag), MA parameters (in increasing order of lag)
    */
   def fitModel(
       p: Int,
@@ -96,6 +106,8 @@ object ARIMA {
       includeIntercept: Boolean = true,
       method: String = "css-cgd",
       userInitParams: Array[Double] = null): ARIMAModel = {
+
+    //差分处理
     // Drop first d terms, can't use those to fit, since not at the right level of differencing
     val diffedTs = differencesOfOrderD(ts, d).toArray.drop(d)
 
@@ -107,6 +119,7 @@ object ARIMA {
       return new ARIMAModel(p, d, q, params, includeIntercept)
     }
 
+    // cofficients 估计
     // Initial parameter guesses if none provided by user
     val initParams = if (userInitParams == null) {
       hannanRissanenInit(p, q, diffedTs, includeIntercept)
@@ -130,6 +143,9 @@ object ARIMA {
   /**
    * Fit an ARIMA model using conditional sum of squares estimator, optimized using unbounded
    * BOBYQA.
+    *
+    * BOBYQA Bound Optimization BY Quadratic Approximation 用二次逼近法优化边界
+    *
    *
    * @param p autoregressive order
    * @param d differencing order
@@ -213,8 +229,13 @@ object ARIMA {
 
   /**
     *
-    * Hannan-Rissanen算法
+    * Hannan-Rissanen算法 ，
     * AR(m) ：  m > max(p, q)
+    *
+    * step1：先使用高阶 m 来估计AR（m）部分，得到对应的误差估计
+    * step2：然后使用最小二乘法OLS来估计AR（p）和 MA（q），这里的MA（q）要用到step1得到的误差估计
+    *
+    * 初始估计
     *
    * Initializes ARMA parameter estimates using the Hannan-Rissanen algorithm. The process is:
    * fit an AR(m) model of a higher order (i.e. m > max(p, q)), use this to estimate errors,
@@ -423,6 +444,10 @@ class ARIMAModel(
     val hasIntercept: Boolean = true) extends TimeSeriesModel {
 
   /**
+    *
+    * 基于条件平方和的指数似然
+    *
+    *
    * log likelihood based on conditional sum of squares
    *
    * Source: http://www.nuffield.ox.ac.uk/economics/papers/1997/w6/ma.pdf
@@ -780,6 +805,14 @@ class ARIMAModel(
   }
 
   /**
+    * 平稳性检测
+    *
+    * ADF检验：
+    * P阶齐次线性方程组（特征方程）的所有特征根都在单位圆内则平稳
+    * 这同样意味着，可以通过检验AR模型的回归系数之和来判断序列是否平稳
+    *
+    *
+    *
    * Check if the AR parameters result in a stationary model. This is done by obtaining the roots
    * to the polynomial 1 - phi_1 * x - phi_2 * x^2 - ... - phi_p * x^p = 0, where phi_i is the
    * corresponding AR parameter. Note that we check the roots, not the inverse of the roots, so
